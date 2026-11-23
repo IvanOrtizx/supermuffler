@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js';
+import { CONFIG } from './config.js?v=20261123';
 import { ES, DYN } from './i18n.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -77,17 +77,39 @@ function initialLang() {
    ===================================================================== */
 function shopNow() {
   const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: CONFIG.timeZone, weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h23'
+    timeZone: CONFIG.timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: 'numeric', minute: 'numeric', hourCycle: 'h23'
   }).formatToParts(new Date());
   const get = type => (parts.find(p => p.type === type) || {}).value;
-  const day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
-  return { day, mins: (parseInt(get('hour'), 10) % 24) * 60 + parseInt(get('minute'), 10) };
+  return {
+    iso: `${get('year')}-${get('month')}-${get('day')}`,
+    mins: (parseInt(get('hour'), 10) % 24) * 60 + parseInt(get('minute'), 10)
+  };
 }
 const fmtHour = h => `${((h + 11) % 12) + 1} ${h < 12 ? 'AM' : 'PM'}`;
 
+/* Shop calendar days are handled as 'YYYY-MM-DD' strings (noon UTC avoids DST edges). */
+const isoDate = iso => new Date(iso + 'T12:00:00Z');
+const isoAdd = (iso, n) => new Date(isoDate(iso).getTime() + n * 864e5).toISOString().slice(0, 10);
+const isoDay = iso => isoDate(iso).getUTCDay();
+const closures = (CONFIG.closures || [])
+  .filter(c => c && /^\d{4}-\d{2}-\d{2}$/.test(c.from))
+  .map(c => ({ ...c, to: c.to || c.from }))
+  .sort((a, b) => a.from.localeCompare(b.from));
+const closureOn = iso => closures.find(c => iso >= c.from && iso <= c.to);
+const hoursOn = iso => (closureOn(iso) ? null : CONFIG.hours[isoDay(iso)]);
+function nextOpening(iso, maxDays = 40) {
+  for (let i = 1; i <= maxDays; i++) {
+    const d = isoAdd(iso, i), h = hoursOn(d);
+    if (h) return { iso: d, inDays: i, hour: h[0] };
+  }
+  return null;
+}
+
 function updateStatus() {
-  const { day, mins } = shopNow();
-  const today = CONFIG.hours[day];
+  const { iso, mins } = shopNow();
+  const day = isoDay(iso);
+  const today = hoursOn(iso);
   let state = 'closed', text;
   if (today && mins >= today[0] * 60 && mins < today[1] * 60) {
     state = today[1] * 60 - mins <= 60 ? 'soon' : 'open';
@@ -95,13 +117,12 @@ function updateStatus() {
   } else if (today && mins < today[0] * 60) {
     text = t('closedToday').replace('{t}', fmtHour(today[0]));
   } else {
-    for (let i = 1; i <= 7; i++) {
-      const d = (day + i) % 7, h = CONFIG.hours[d];
-      if (!h) continue;
-      text = i === 1
-        ? t('closedTomorrow').replace('{t}', fmtHour(h[0]))
-        : t('closedDay').replace('{d}', t('days')[d]).replace('{t}', fmtHour(h[0]));
-      break;
+    const next = nextOpening(iso);
+    if (next) {
+      const when = next.inDays < 7 ? t('days')[isoDay(next.iso)] : fmtDate(next.iso, false);
+      text = next.inDays === 1
+        ? t('closedTomorrow').replace('{t}', fmtHour(next.hour))
+        : t('closedDay').replace('{d}', when).replace('{t}', fmtHour(next.hour));
     }
   }
   $$('[data-status]').forEach(el => {
@@ -110,6 +131,70 @@ function updateStatus() {
     if (tx) tx.textContent = text || '';
   });
   $$('.hours tr').forEach(tr => tr.classList.toggle('is-today', Number(tr.dataset.day) === day));
+  renderNotice(iso);
+}
+
+/* =====================================================================
+   Holiday notice at the top of the header (driven by CONFIG.closures)
+   ===================================================================== */
+function datePartsFor(iso) {
+  const loc = lang === 'es' ? 'es-US' : 'en-US';
+  const parts = new Intl.DateTimeFormat(loc, { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })
+    .formatToParts(isoDate(iso));
+  const get = type => (parts.find(p => p.type === type) || {}).value;
+  return { weekday: get('weekday'), month: get('month'), day: get('day') };
+}
+// en: "Thursday, November 26"   es: "jueves 26 de noviembre"
+function fmtDate(iso, withWeekday = true) {
+  const p = datePartsFor(iso);
+  if (lang === 'es') return `${withWeekday ? p.weekday + ' ' : ''}${p.day} de ${p.month}`;
+  return `${withWeekday ? p.weekday + ', ' : ''}${p.month} ${p.day}`;
+}
+function fmtClosedDays(c) {
+  const es = lang === 'es';
+  const a = datePartsFor(c.from), b = datePartsFor(c.to);
+  const span = Math.round((isoDate(c.to) - isoDate(c.from)) / 864e5);
+  if (span === 0) return fmtDate(c.from);
+  if (span === 1) {
+    if (es && a.month === b.month) return `${a.weekday} ${a.day} y el ${b.weekday} ${b.day} de ${b.month}`;
+    return `${fmtDate(c.from)} ${es ? 'y el' : 'and'} ${fmtDate(c.to)}`;
+  }
+  return es ? `del ${fmtDate(c.from)} al ${fmtDate(c.to)}` : `${fmtDate(c.from)} through ${fmtDate(c.to)}`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+function activeClosure(iso) {
+  return closures.find(c => iso <= c.to && iso >= (c.showFrom || isoAdd(c.from, -10)));
+}
+function syncNoticeHeight() {
+  const bar = $('#shopNotice');
+  const h = bar && !bar.hidden ? bar.offsetHeight : 0;
+  document.documentElement.style.setProperty('--notice-h', `${h}px`);
+}
+function renderNotice(iso) {
+  const bar = $('#shopNotice');
+  if (!bar) return;
+  const c = activeClosure(iso || shopNow().iso);
+  if (!c || store.get(`sm-notice-${c.from}`) === 'hidden') {
+    bar.hidden = true;
+    syncNoticeHeight();
+    return;
+  }
+  const es = lang === 'es';
+  const name = esc((c.name && c.name[lang]) || (es ? 'el feriado' : 'the holiday'));
+  const next = nextOpening(c.to);
+  const reopen = next ? `${fmtDate(next.iso)} ${es ? 'a las' : 'at'} ${fmtHour(next.hour)}` : '';
+  let html = es
+    ? `<strong>Cerrado por ${name}</strong> el ${esc(fmtClosedDays(c))}.`
+    : `<strong>Closed for ${name}</strong> on ${esc(fmtClosedDays(c))}.`;
+  if (reopen) html += ` <span class="notice-reopen">${es ? `Volvemos a abrir el ${esc(reopen)}.` : `We reopen ${esc(reopen)}.`}</span>`;
+  if (c.note && c.note[lang]) html += ` <span class="notice-extra">${esc(c.note[lang])}</span>`;
+  $('[data-notice-text]', bar).innerHTML = html;
+  const close = $('[data-notice-close]', bar);
+  close.setAttribute('aria-label', es ? 'Ocultar aviso' : 'Hide notice');
+  close.onclick = () => { store.set(`sm-notice-${c.from}`, 'hidden'); bar.hidden = true; syncNoticeHeight(); };
+  bar.hidden = false;
+  syncNoticeHeight();
 }
 
 /* =====================================================================
@@ -434,6 +519,7 @@ renderVideos();
 applyLang(initialLang());
 $$('.lang-btn').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
 setInterval(updateStatus, 60 * 1000);
+window.addEventListener('resize', syncNoticeHeight, { passive: true });
 initMenu();
 initParts();
 initGallery();

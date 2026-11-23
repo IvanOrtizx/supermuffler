@@ -19,6 +19,17 @@ export const CONFIG = {
     6: null
   },
 
+  // Holiday closures (shop dates, YYYY-MM-DD). From `showFrom` (default: 10 days before) until
+  // the last closed day ends, a notice shows at the top of the page, and the open/closed status
+  // skips these days. To add a holiday, copy a line and change the dates and names.
+  closures: [
+    {
+      from: '2026-11-26', to: '2026-11-27',
+      name: { en: 'Thanksgiving', es: 'Acción de Gracias' },
+      note: { en: 'Happy Thanksgiving!', es: '¡Feliz Día de Acción de Gracias!' }
+    }
+  ],
+
   // Posts and videos to show in "Watch the work".
   //   Instagram: https://www.instagram.com/p/C8U-BTZyYVz/  ->  { platform: 'instagram', id: 'C8U-BTZyYVz' }
   //              (works for posts and reels; Instagram shows its own cover and caption)

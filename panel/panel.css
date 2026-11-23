@@ -1,0 +1,72 @@
+/* Contacts panel - builds on ../css/styles.css */
+.panel-body { padding-bottom: 0; background: var(--wall); min-height: 100vh; }
+.panel-tag { display: none; font-family: var(--display); font-weight: 600; font-size: 1.25rem; color: var(--muted); padding-left: 14px; border-left: 2px solid var(--line); }
+@media (min-width: 640px) { .panel-tag { display: block; } }
+
+/* login */
+.login { padding: clamp(32px, 8vw, 80px) 18px; display: grid; place-items: center; }
+.login-card { width: 100%; max-width: 26rem; background: var(--white); border-radius: 10px; padding: 28px; border-top: 5px solid var(--red); display: grid; gap: 16px; }
+.login-card h1 { font-size: 2.2rem; }
+.login-card p { color: var(--muted); }
+.login-card .btn { width: 100%; }
+.demo-hint { font-size: .95rem; background: #fff6d6; border-radius: var(--radius); padding: 8px 12px; color: var(--ink) !important; }
+
+/* app */
+.app { padding-block: 24px 56px; }
+.demo-banner { background: var(--yellow); color: var(--ink); border-radius: var(--radius); padding: 10px 14px; font-weight: 500; margin-bottom: 18px; }
+.app-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.app-head h1 { font-size: clamp(2rem, 5vw, 2.8rem); }
+.count { font-family: var(--text); font-weight: 500; font-size: 1.1rem; color: var(--muted); }
+.app-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.toolbar { display: grid; gap: 12px; margin-top: 18px; }
+.toolbar input[type="search"] { width: 100%; min-height: 46px; padding: 10px 14px; border: 1.5px solid #bfc3cd; border-radius: var(--radius); background: var(--white); font-size: 1rem; }
+.toolbar input[type="search"]:focus { border-color: var(--blue); outline: 3px solid rgba(35, 71, 160, .25); outline-offset: 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.filter {
+  min-height: 38px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid #c9ccd6; background: var(--white);
+  font-family: var(--display); font-weight: 600; font-size: 1.02rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.filter b { font-family: var(--text); font-weight: 600; font-size: .85rem; background: var(--wall); border-radius: 999px; padding: 1px 8px; }
+.filter[aria-pressed="true"] { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.filter[aria-pressed="true"] b { background: rgba(255, 255, 255, .18); }
+.app-status { margin-top: 12px; font-size: .95rem; color: var(--muted); min-height: 1.4em; }
+.app-status[data-state="error"] { color: #8d1a14; font-weight: 500; }
+
+/* table (cards on phones) */
+.contacts { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 6px; }
+.contacts thead { display: none; }
+.contacts tbody { display: grid; gap: 10px; }
+.contacts tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; background: var(--white); border-radius: var(--radius); padding: 14px 16px; border-left: 4px solid var(--line); }
+.contacts tr[data-status="New"] { border-left-color: var(--red); }
+.contacts tr[data-status="Added to CRM"] { border-left-color: var(--yellow); }
+.contacts tr[data-status="Customer"] { border-left-color: var(--ok); }
+.contacts tr[data-status="Unsubscribed"], .contacts tr[data-status="Spam"] { opacity: .6; }
+.contacts td { padding: 0; min-width: 0; overflow-wrap: anywhere; }
+.contacts td.c-name { font-family: var(--display); font-weight: 600; font-size: 1.35rem; line-height: 1.15; grid-column: 1; }
+.contacts td.c-date { grid-column: 1 / -1; order: -1; font-size: .88rem; color: var(--muted); }
+.contacts td.c-status { grid-column: 2; grid-row: 2 / span 3; align-self: start; }
+.contacts td.c-email, .contacts td.c-phone { grid-column: 1; }
+.contacts td.c-meta { grid-column: 1; font-size: .9rem; color: var(--muted); }
+.contacts a { color: var(--blue); text-decoration: none; font-weight: 500; }
+.contacts a:hover { text-decoration: underline; }
+.contacts select { min-height: 38px; padding: 6px 8px; border: 1.5px solid #c9ccd6; border-radius: var(--radius); background: var(--white); font-size: .95rem; max-width: 9.5rem; }
+.empty { margin-top: 24px; padding: 28px; text-align: center; background: var(--white); border-radius: var(--radius); color: var(--muted); }
+
+@media (min-width: 960px) {
+  .toolbar { grid-template-columns: minmax(16rem, 24rem) 1fr; align-items: center; }
+  .contacts { background: var(--white); border-radius: var(--radius); overflow: hidden; }
+  .contacts thead { display: table-header-group; }
+  .contacts tbody { display: table-row-group; }
+  .contacts tr { display: table-row; padding: 0; border: 0; }
+  .contacts th { text-align: left; font-family: var(--display); font-weight: 600; font-size: 1.02rem; padding: 12px 14px; background: var(--navy); color: var(--white); }
+  .contacts td { display: table-cell; padding: 12px 14px; border-top: 1px solid var(--line); vertical-align: middle; }
+  .contacts tbody tr td:first-child { box-shadow: inset 4px 0 0 var(--line); }
+  .contacts tr[data-status="New"] td:first-child { box-shadow: inset 4px 0 0 var(--red); }
+  .contacts tr[data-status="Added to CRM"] td:first-child { box-shadow: inset 4px 0 0 var(--yellow); }
+  .contacts tr[data-status="Customer"] td:first-child { box-shadow: inset 4px 0 0 var(--ok); }
+  .contacts td.c-name { font-size: 1.15rem; }
+  .contacts td.c-date { font-size: .92rem; white-space: nowrap; }
+  .contacts td.c-meta { font-size: .95rem; }
+  .contacts tbody tr:hover td { background: #fafaf8; }
+}

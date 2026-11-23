@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contacts panel | Super Muffler Inc.</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0c1a3d">
+  <link rel="icon" href="../favicon.ico" sizes="32x32">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body class="panel-body">
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="../"><img src="../img/logo.png" alt="Super Muffler, go to the website" width="360" height="218"></a>
+      <p class="panel-tag" data-t="title">Contacts panel</p>
+      <div class="header-actions">
+        <div class="lang" role="group" aria-label="Language / Idioma">
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
+          <button type="button" class="lang-btn" data-lang="es" aria-pressed="false">ES</button>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="logout" hidden data-t="logout">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- login -->
+    <section class="login" id="login">
+      <form class="login-card" id="loginForm" novalidate>
+        <h1 data-t="loginTitle">Website contacts</h1>
+        <p data-t="loginText">Enter the panel password to see the people who left their info on the website.</p>
+        <div class="field">
+          <label for="pw" data-t="password">Password</label>
+          <input id="pw" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-red btn-lg" type="submit" id="loginBtn" data-t="open">Open panel</button>
+        <p class="form-status" id="loginStatus" role="status" aria-live="polite"></p>
+        <p class="demo-hint" id="demoHint" hidden data-t="demoHint">Demo: the password is demo</p>
+      </form>
+    </section>
+
+    <!-- first login: choose a new password -->
+    <section class="login" id="changePw" hidden>
+      <form class="login-card" id="changeForm" novalidate>
+        <h1 data-t="changeTitle">Choose your password</h1>
+        <p data-t="changeText">You logged in with the temporary password. Choose a new one to open the panel.</p>
+        <div class="field">
+          <label for="pw1" data-t="newPw">New password (at least 8 characters)</label>
+          <input id="pw1" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div class="field">
+          <label for="pw2" data-t="newPw2">Type it again</label>
+          <input id="pw2" type="password" autocomplete="new-password" minlength="8" required>
+        </div>
+        <button class="btn btn-red btn-lg" type="submit" id="changeBtn" data-t="saveOpen">Save and open panel</button>
+        <p class="form-status" id="changeStatus" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- contacts -->
+    <section class="wrap app" id="app" hidden>
+      <p class="demo-banner" id="demoBanner" hidden data-t="demoBanner">Demo with sample data. Real contacts from the website form will show here once the form is connected.</p>
+
+      <div class="app-head">
+        <h1><span data-t="contacts">Contacts</span> <span class="count" id="count"></span></h1>
+        <div class="app-actions">
+          <button type="button" class="btn btn-outline btn-sm" id="refresh" data-t="refresh">Refresh</button>
+          <button type="button" class="btn btn-red btn-sm" id="export" data-t="export">Download CSV</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <label class="sr-only" for="q" data-t="searchLabel">Search contacts</label>
+        <input type="search" id="q" autocomplete="off" placeholder="Search by name, email or phone" data-t-ph="search">
+        <div class="filters" id="filters" role="group" aria-label="Filter by status" data-t-aria="filterAria"></div>
+      </div>
+
+      <p class="app-status" id="appStatus" role="status" aria-live="polite"></p>
+
+      <table class="contacts" id="table">
+        <thead>
+          <tr>
+            <th scope="col" data-t="colDate">Received</th>
+            <th scope="col" data-t="colName">Name</th>
+            <th scope="col" data-t="colEmail">Email</th>
+            <th scope="col" data-t="colPhone">Phone</th>
+            <th scope="col" data-t="colSource">Heard about us</th>
+            <th scope="col" data-t="colLang">Language</th>
+            <th scope="col" data-t="colStatus">Status</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p class="empty" id="empty" hidden></p>
+    </section>
+  </main>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

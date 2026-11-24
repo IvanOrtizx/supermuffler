@@ -395,6 +395,9 @@ svg { fill: currentColor; }
 .hours td { text-align: right; font-variant-numeric: tabular-nums; }
 .hours tr.is-today { background: var(--white); box-shadow: inset 4px 0 0 var(--red); }
 .hours tr.is-today th, .hours tr.is-today td { font-weight: 600; }
+.hours tr.is-holiday td { color: var(--red); }
+.hours .hours-off { font-weight: 600; }
+.hours .hours-why { font-weight: 400; }
 .dropoff { margin-top: 12px; font-size: .98rem; color: var(--muted); max-width: 26rem; }
 .visit-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 .map { border-radius: var(--radius); overflow: hidden; background: #dfe3ea; min-height: 300px; }

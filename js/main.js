@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js?v=20261123';
+import { CONFIG } from './config.js?v=20261123b';
 import { ES, DYN } from './i18n.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -130,7 +130,23 @@ function updateStatus() {
     const tx = $('[data-status-text]', el);
     if (tx) tx.textContent = text || '';
   });
-  $$('.hours tr').forEach(tr => tr.classList.toggle('is-today', Number(tr.dataset.day) === day));
+  // Weekly table: a regular day that falls on a holiday in the coming week shows as closed.
+  $$('.hours tr').forEach(tr => {
+    const d = Number(tr.dataset.day);
+    tr.classList.toggle('is-today', d === day);
+    const td = $('td', tr);
+    if (!td || !CONFIG.hours[d]) return;
+    if (td.dataset.orig == null) td.dataset.orig = td.innerHTML;
+    const c = closureOn(isoAdd(iso, (d - day + 7) % 7));
+    tr.classList.toggle('is-holiday', !!c);
+    if (c) {
+      const name = c.name && c.name[lang];
+      td.innerHTML = `<span class="hours-off">${lang === 'es' ? 'Cerrado' : 'Closed'}</span>`
+        + (name ? ` <span class="hours-why">(${esc(name)})</span>` : '');
+    } else {
+      td.innerHTML = td.dataset.orig;
+    }
+  });
   renderNotice(iso);
 }
 
